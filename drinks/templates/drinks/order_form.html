@@ -1,0 +1,18 @@
+{% extends 'drinks/base.html' %}
+{% load static %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'drinks/style.css' %}">
+{% endblock %}
+
+{% block content %}
+<h1>Place an Order</h1>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Order Now</button>
+</form>
+
+<p><a href="{% url 'drinks:order_list' %}">Back to home</a></p>
+{% endblock %}

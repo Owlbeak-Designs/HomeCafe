@@ -1,26 +1,73 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Homecafe Orders</title>
-</head>
-<body>
+{% extends 'drinks/base.html' %}
+{% load static %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'drinks/style.css' %}">
+{% endblock %}
+
+{% block content %}
     <h1>Current Drink Orders</h1>
+    <a href="{% url 'drinks:order_create' %}"><button>Order Now</button></a>
+
     {% if orders %}
-        <ul>
-        {% for order in orders %}
-            <li>
-                {{ order.drink_type }} – ordered by {{ order.ordered_by.username }}
-                ({{ order.ordered_at|date:"H:i" }})
-                {% if order.claimed_by %}
-                    – being made by {{ order.claimed_by.username }}
-                {% else %}
-                    – <a href="#">Claim this order</a>
-                {% endif %}
-            </li>
-        {% endfor %}
-        </ul>
+        <table border="1" cellpadding="8" style="border-collapse: collapse; margin-top: 20px;">
+            <thead>
+                <tr>
+                    <th>Drink</th>
+                    <th>Ordered by</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                    <th>Claimed by</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                    <tr>
+                        <td>{{ order.drink_type }}</td>
+                        <td>{{ order.ordered_by.username }}</td>
+                        <td>{{ order.ordered_at|date:"H:i" }}</td>
+                        <td>
+                            {% if order.status == 'pending' %}
+                                ⏳ Pending
+                            {% elif order.status == 'making' %}
+                                🔨 Making
+                            {% elif order.status == 'ready' %}
+                                ✅ Ready
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if order.claimed_by %}
+                                {{ order.claimed_by.username }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if not order.claimed_by %}
+                                <form method="post" action="{% url 'drinks:claim_order' order.pk %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit">Claim</button>
+                                </form>
+                            {% elif order.claimed_by == user %}
+                                <form method="post" action="{% url 'drinks:update_status' order.pk %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <select name="status">
+                                        <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Pending</option>
+                                        <option value="making" {% if order.status == 'making' %}selected{% endif %}>Making</option>
+                                        <option value="ready" {% if order.status == 'ready' %}selected{% endif %}>Ready</option>
+                                    </select>
+                                    <button type="submit">Update</button>
+                                </form>
+                            {% else %}
+                                <em>Being made by {{ order.claimed_by.username }}</em>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     {% else %}
         <p>No orders yet. Be the first barista to order!</p>
     {% endif %}
-</body>
-</html>
+{% endblock %}
