@@ -6,13 +6,68 @@
 {% endblock %}
 
 {% block content %}
-<h1>Place an Order</h1>
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="card shadow-sm" style="width: 100%; max-width: 500px;">
+        <div class="card-body">
+            <h1 class="card-title text-center mb-4">Place an Order</h1>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Order Now</button>
-</form>
+            <form method="post">
+                {% csrf_token %}
 
-<p><a href="{% url 'drinks:order_list' %}">Back to home</a></p>
+                <!-- Display non-field errors (if any) -->
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ form.non_field_errors }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endif %}
+
+                <!-- Loop through form fields -->
+                {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">
+                            {{ field.label }}
+                        </label>
+                        
+                        <!-- Add Bootstrap classes to the widget -->
+                        {% if field.field.widget.input_type == 'select' %}
+                            <select name="{{ field.html_name }}" 
+                                    id="{{ field.id_for_label }}" 
+                                    class="form-select {% if field.errors %}is-invalid{% endif %}">
+                                {% for choice_value, choice_label in field.field.choices %}
+                                    <option value="{{ choice_value }}" {% if field.value == choice_value %}selected{% endif %}>
+                                        {{ choice_label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        {% else %}
+                            <input type="{{ field.field.widget.input_type }}" 
+                                   name="{{ field.html_name }}" 
+                                   id="{{ field.id_for_label }}" 
+                                   class="form-control {% if field.errors %}is-invalid{% endif %}"
+                                   value="{{ field.value|default:'' }}">
+                        {% endif %}
+
+                        <!-- Field-specific error messages -->
+                        {% if field.errors %}
+                            <div class="invalid-feedback">
+                                {{ field.errors|striptags }}
+                            </div>
+                        {% endif %}
+
+                        <!-- Help text (if any) -->
+                        {% if field.help_text %}
+                            <div class="form-text text-muted small">{{ field.help_text }}</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">Order Now</button>
+                    <a href="{% url 'drinks:order_list' %}" class="btn btn-outline-secondary">Back to orders</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
