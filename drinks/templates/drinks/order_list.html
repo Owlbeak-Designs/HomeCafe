@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Homecafe Orders</title>
+</head>
+<body>
+    <h1>Current Drink Orders</h1>
+    {% if orders %}
+        <ul>
+        {% for order in orders %}
+            <li>
+                {{ order.drink_type }} – ordered by {{ order.ordered_by.username }}
+                ({{ order.ordered_at|date:"H:i" }})
+                {% if order.claimed_by %}
+                    – being made by {{ order.claimed_by.username }}
+                {% else %}
+                    – <a href="#">Claim this order</a>
+                {% endif %}
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No orders yet. Be the first barista to order!</p>
+    {% endif %}
+</body>
+</html>
